@@ -65,4 +65,24 @@ class CategoriaController extends Controller
 
        return response()->json(["response" => "eliminado"]);
     }
+
+    /**Método para mostrar las categorías eliminados temporalmente */
+    public function showCategoriasPapelera()
+    {
+        $categoriasPapelera = Categoria::onlyTrashed()->get();
+
+        return response()->json(["categorias"=>$categoriasPapelera]);
+    }
+
+    /**
+     * Método para activar la categoría
+     */
+    public function Activar($id)
+    {
+     $categoria = Categoria::onlyTrashed()->find($id);
+
+     $categoria->restore();
+
+     return response()->json(["response" => "activado"]);
+    }
 }

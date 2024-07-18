@@ -26,10 +26,19 @@
                with font-awesome or any other icon font library -->
           
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="{{route("categoria.index")}}" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
-                Simple Link
+               Categorías
+              </p>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a href="{{route("producto.index")}}" class="nav-link">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+               Productos
               </p>
             </a>
           </li>

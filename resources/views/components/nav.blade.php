@@ -23,9 +23,12 @@
             <i class="fas fa-users mr-2"></i> Mi Perfil
           </a>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
+          <a href="javascript:;" class="dropdown-item" 
+          onclick="document.getElementById('cerrar_sesion').submit()">
             <i class="fas fa-file mr-2"></i> Cerrar Sesión
           </a>
+
+          <form action="{{route("logout")}}" method="post" id="cerrar_sesion">@csrf</form>
         </div>
       </li>
       <li class="nav-item">

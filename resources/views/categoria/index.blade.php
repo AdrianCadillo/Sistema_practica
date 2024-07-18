@@ -7,6 +7,7 @@
              </div>
              <div class="card-body">
                 <button class="btn btn-primary mb-2" id="add_cat">Agregar uno nuevo <i class="fas fa-plus"></i></button>
+                <button class="btn btn-success mb-2" id="show_papelera">Papelera <i class="fas fa-trash-alt"></i></button>
                 <table class="table table-bordered table-striped">
                  <thead>
                    <tr>
@@ -50,15 +51,45 @@
               </div>
             </div>
           </div>
+
+          {{-- MODAL PARA MOSTRAR LAS CATEGORIAS EN LA PAPELERA----}}
+          <div class="modal" tabindex="-1" id="modal_show_papelera">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Categorías en la papelera</h5>
+                  
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                       <table class="table table-bordered nowrap" style="width: 100%" id="cat_papelera">
+                         <thead>
+                          <tr>
+                            <th>CATEGORÍA</th>
+                            <th>ACCIONES</th>
+                          </tr>
+                         </thead>
+                       </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close_cat">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
     @endsection
 
 
     @section('js')
-        <script>
+        <script type="module">
+          var TablaCategoriasPapelera;
             $(document).ready(function(){
-
+              
               /// mostrando las categorías
-              showCategorias();
+              showCategorias();showCategoriasPapelera();
+
+              ActivarCategoria(TablaCategoriasPapelera,'#cat_papelera tbody')
 
               $('#add_cat').click(function(){
                  $('#modal_add_categoria').modal("show")
@@ -71,29 +102,45 @@
 
               $('#save_categoria').click(function(){
 
-                 $.ajax({
-                    url:"/categoria/store",
-                    method:"POST",
-                    data:$('#form_categoria').serialize(),
-                    dataType:"json",
-                    success:function(response)
-                    {
-                        if(response.errors != undefined){
-                            if(response.errors.nombre_categoria != undefined){
-                                $('#response_nombre_categoria').text(response.errors.nombre_categoria)
-                            }else{
-                                $('#response_nombre_categoria').text("")
-                            }
-                        }else{
-                            Swal.fire({
-                            title: "Success?",
-                            text: "Categoría registrado",
-                            icon: "success"
-                            });                
-                        }
+                //  $.ajax({
+                //     url:"/categoria/store",
+                //     method:"POST",
+                //     data:$('#form_categoria').serialize(),
+                //     dataType:"json",
+                //     success:function(response)
+                //     {
+                //         if(response.errors != undefined){
+                //             if(response.errors.nombre_categoria != undefined){
+                //                 $('#response_nombre_categoria').text(response.errors.nombre_categoria)
+                //             }else{
+                //                 $('#response_nombre_categoria').text("")
+                //             }
+                //         }else{
+                //             Swal.fire({
+                //             title: "Success?",
+                //             text: "Categoría registrado",
+                //             icon: "success"
+                //             });                
+                //         }
                         
-                    }
-                 });
+                //     }
+                //  });
+
+                 let FormCategoria = new FormData(document.getElementById("form_categoria"));
+                //  FormCategoria.append('nombre_categoria',$('#nombre_categoria').val());
+                //  FormCategoria.append('_token',"{{csrf_token()}}");
+               axios({
+                method: 'post',
+                url: '/categoria/store',
+                data:FormCategoria
+                }).then(function(respuesta){
+                   console.log(respuesta.data)
+                });
+                });
+
+              $('#show_papelera').click(function(){
+                $('#modal_show_papelera').modal("show")
+                showCategoriasPapelera();
               });
 
 
@@ -104,8 +151,18 @@
                 let fila = $(this).closest("tr");
 
                 let IdCategoria = fila.find('td').eq(1).text();
-                
-                $.ajax({
+
+               Swal.fire({
+                title: "Estas seguro?",
+                text: "Al presionar que si, la categoría se irá a la papelera!",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Si, eliminar!"
+                }).then((result) => {
+                if (result.isConfirmed) {
+                  $.ajax({
                     url:"categoria/"+IdCategoria+"/delete",
                     method:"POST",
                     data:{_token:"{{csrf_token()}}"},
@@ -121,6 +178,9 @@
                          showCategorias();
                     } 
                 });
+                }
+                });
+                
               });
             });
 
@@ -160,6 +220,73 @@
                     }
                 });
             }
+
+          /// mostrar las categorias en papelera
+          function showCategoriasPapelera(){
+            TablaCategoriasPapelera = $('#cat_papelera').DataTable({
+              retrieve:true,
+              ajax:{
+                url:"/categorias-en-la-papelera",
+                method:"GET",
+                dataSrc:"categorias",
+              },
+              columns:[
+                {"data":"nombre_categoria"},
+                {"data":null,render:function(){
+                  return `
+                    <div class='row'>
+                     <div class='col-auto'>
+                      <button class='btn btn-success btn-sm' id='activar'><i class='fas fa-check'></i></button> 
+                     </div>
+                      <div class='col-auto'>
+                       <button class='btn btn-danger btn-sm'><b>X</b></button>   
+                      </div>  
+                    </div>
+                  `;
+                }}
+              ]
+            }).ajax.reload();
+          }
+
+          /// método para activar la categoria
+          function ActivarCategoria(Tabla,Tbody){
+            $(Tbody).on('click','#activar',function(){
+              
+               /// recuperar la fila seleccionada
+               let fila = $(this).parents('tr');
+
+               ///
+               if(fila.hasClass('child')){
+                 fila = fila.prev();
+               }
+
+               let Data = Tabla.row(fila).data();
+
+               let IdCategoria = Data.id_categoria;
+
+               $.ajax({
+                url:"/categoria/"+IdCategoria+"/activar",
+                method:"PUT",
+                data:{
+                  _token:"{{csrf_token()}}"
+                },
+                dataType:"json",
+                success:function(respuesta){
+                  if(respuesta.response === "activado"){
+                    Swal.fire({
+                      title:"Mensaje del sistema!",
+                      text:"Categoría activado correctamente!",
+                      icon:"success"
+                    }).then(function(){
+                      showCategoriasPapelera();
+                      showCategorias();
+                    });
+                  }
+                }
+               })
+               
+            });
+          }
         </script>
     @endsection
 </x-app>
