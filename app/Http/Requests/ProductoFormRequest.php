@@ -24,7 +24,8 @@ class ProductoFormRequest extends FormRequest
         return [
            "nombre_producto" => "required",
            "stock" => ["required","numeric"],
-           "precio" => ["required","numeric"]
+           "precio" => ["required","numeric"],
+           "imagen" => "image"
         ];
     }
 

@@ -17,4 +17,9 @@ Route::controller(CategoriaController::class)->middleware("auth")->group(functio
 Route::controller(ProductoController::class)->middleware("auth")->group(function(){
  Route::get("/productos","index")->name("producto.index");
  Route::post("/producto/store","store")->name("producto.store");
+ Route::get("/producto/{producto}/editar","editar")->name("producto.editar");
+ Route::put("/producto/{producto}/update","modificar")->name("producto.modificar");
+ Route::put("/producto/{producto}/delete","eliminar")->name("producto.eliminar");
+ Route::get("/productos-en-la-papelera","showProductosPepelera");
+ Route::put("/producto/{id}/active","activar")->name("producto.activar");
 });

@@ -11,7 +11,7 @@ class Producto extends Model
 {
     use HasFactory,HasUuids,SoftDeletes;
 
-    protected $fillable = ["nombre_producto","descripcion","stock","precio","imagen"];
+    protected $fillable = ["nombre_producto","descripcion","stock","precio","categoria_id"];
 
     const DELETED_AT = "eliminado_producto";
 
